@@ -1,7 +1,9 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
+const RateLimit = require("express-rate-limit");
 
+// Load environment variables from .env file
 dotenv.config();
 
 require("./config/notion");
@@ -11,7 +13,11 @@ const { healthRoutes, ticketsRoutes } = routes;
 
 const errorHandler = require("./middleware/errorHandler");
 
-// Load environment variables from .env file
+// Set up rate limiter: maximum of twenty requests per minute
+const limiter = RateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 20,
+});
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,6 +28,7 @@ const BASE_API_PATH = "/api/v1";
 // Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(limiter);
 
 // Routes
 app.get("/", (req, res) => {
