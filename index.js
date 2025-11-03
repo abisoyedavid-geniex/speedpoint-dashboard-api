@@ -15,6 +15,7 @@ const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const host = "0.0.0.0";
 
 const BASE_API_PATH = "/api/v1";
 
@@ -36,7 +37,7 @@ app.use(`${BASE_API_PATH}/tickets`, ticketsRoutes);
 app.use(errorHandler);
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, host, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
