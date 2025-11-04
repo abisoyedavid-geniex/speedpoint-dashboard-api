@@ -10,6 +10,9 @@ const transformations = {
         "type": "Feature Requests",
         "total": $count(results[properties.Type.select.name="Feature Request"])
       }, {
+        "type": "Others",
+        "total": $count(results) - $count(results[properties.Type.select.name="Feature Request"]) - $count(results[properties.Type.select.name="Bug"])
+      }, {
         "type": "All",
         "total": $count(results)
       }]
@@ -24,6 +27,9 @@ const transformations = {
       }, {
         "type": "Feature Requests",
         "average_age_days": featureRequestsAverageAge
+      }, {
+        "type": "Others",
+        "average_age_days": othersAverageAge
       }]
     }
   `,
