@@ -2,6 +2,9 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 const RateLimit = require("express-rate-limit");
+const swaggerUi = require("swagger-ui-express");
+const swaggerJSDoc = require("swagger-jsdoc");
+const swaggerOptions = require("./swagger");
 
 // Load environment variables from .env file
 dotenv.config();
@@ -37,6 +40,13 @@ app.get("/", (req, res) => {
     status: "running",
   });
 });
+app.use(
+  `${BASE_API_PATH}/api-docs`,
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerJSDoc(swaggerOptions), {
+    explorer: true,
+  })
+);
 app.use(`${BASE_API_PATH}/health`, healthRoutes);
 app.use(`${BASE_API_PATH}/tickets`, ticketsRoutes);
 
