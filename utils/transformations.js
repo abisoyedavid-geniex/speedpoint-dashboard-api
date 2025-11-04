@@ -26,7 +26,8 @@ const transformations = {
         "top_oldest_tickets": results[[0..$topX]].{
             "ticket_id": properties.ID.unique_id.prefix & ' ' & properties.ID.unique_id.number,
             "title": properties.Title.title[0].plain_text,
-            "age_days": properties.Age.number
+            "age_days": properties.Age.number,
+            "reported_date": properties.\`Reported On\`.date.start
         }
       }
   `,

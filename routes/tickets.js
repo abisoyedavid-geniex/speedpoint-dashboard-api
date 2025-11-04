@@ -26,9 +26,32 @@ const dataSourceId = process.env.NOTION_DATA_SOURCE_ID;
  * }
  */
 router.get("/open-summary", async (req, res, next) => {
+  const { category, date_range: dateRange, status } = req.query || {};
+  const filter = { and: [] };
+
+  if (status) {
+    filter.and.push({
+      property: "Status",
+      status: { equals: status },
+    });
+  }
+
+  if (category) {
+    filter.and.push({
+      property: "Type",
+      select: { equals: category },
+    });
+  }
+
+  // TODO: Add date_range support
+  if (dateRange) {
+    // Implement date range filtering logic here
+  }
+
   try {
     const response = await notion.dataSources.query({
       data_source_id: dataSourceId,
+      filter: filter.and.length > 0 ? filter : undefined,
     });
 
     const transformedData = await transformData(response, openSummary);
