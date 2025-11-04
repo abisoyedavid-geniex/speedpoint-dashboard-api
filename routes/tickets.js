@@ -14,16 +14,47 @@ const router = express.Router();
 const dataSourceId = process.env.NOTION_DATA_SOURCE_ID;
 
 /**
- * GET /tickets/open-summary
- * Response example
- * {
- * "date": "2025-10-29",
- * "total_open_tickets": 87,
- * "breakdown": {
- *    "bugs": 16,
- *    "feature_requests": 71
- *  }
- * }
+ * @swagger
+ * /tickets/open-summary:
+ *   get:
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         description: Filter tickets by status (e.g., "Open", "Closed")
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: category
+ *         description: Filter tickets by category (e.g., "Bug", "Feature Request")
+ *         schema:
+ *           type: string
+ *         summary: Get a summary of the total open tickets
+ *     description: Retrieve a summary of the total open tickets
+ *     tags:
+ *       - Tickets
+ *     responses:
+ *       200:
+ *         description: Open tickets summary
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 date:
+ *                   type: string
+ *                   example: 2025-11-03T23:59:28.303Z
+ *                 total_open_tickets:
+ *                   type: number
+ *                   example: 34
+ *                 breakdown:
+ *                   type: object
+ *                   properties:
+ *                     bugs:
+ *                       type: number
+ *                       example: 16
+ *                     feature_requests:
+ *                       type: number
+ *                       example: 12
  */
 router.get("/open-summary", async (req, res, next) => {
   const { category, date_range: dateRange, status } = req.query || {};
@@ -62,19 +93,39 @@ router.get("/open-summary", async (req, res, next) => {
 });
 
 /**
- * GET /tickets/average_age
- *
- * Query Params
- * - status: string - filter tickets by status (e.g., "Open", "Closed")
- *
- * Response example
- * {
- * "date": "2025-10-29",
- * "average_age_days": {
- *    "bugs": 16,
- *    "feature_requests": 71
- *  }
- * }
+ * @swagger
+ * /tickets/average_age:
+ *   get:
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         description: Filter tickets by status (e.g., "Open", "Closed")
+ *         schema:
+ *           type: string
+ *         summary: Get average age of tickets
+ *     description: Retrieve the average age of all open tickets
+ *     tags:
+ *       - Tickets
+ *     responses:
+ *       200:
+ *         description: Average age of tickets
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 date:
+ *                   type: string
+ *                   example: 2025-11-03T23:59:28.303Z
+ *                 average_age_days:
+ *                   type: object
+ *                   properties:
+ *                     bugs:
+ *                       type: number
+ *                       example: 5
+ *                     feature_requests:
+ *                       type: number
+ *                       example: 4
  */
 router.get("/average-age", async (req, res, next) => {
   try {
@@ -126,24 +177,52 @@ router.get("/average-age", async (req, res, next) => {
 });
 
 /**
- * GET /tickets/average_age
- *
- * Query Params
- * - category: string - "Bug" or "Feature Request"
- * - limit: number - number of top oldest tickets to return
- *
- * Response example
- * {
- * "date": "2025-10-29",
- * "category": "bugs",
- * "top_5_oldest_tickets": [
- *    { "ticket_id": "BUG-1023", "title": "Login fails on Safari", "age_days": 42 },
- *    { "ticket_id": "BUG-0987", "title": "API timeout issue", "age_days": 37 },
- *    { "ticket_id": "BUG-0954", "title": "Incorrect data sync", "age_days": 34 },
- *    { "ticket_id": "BUG-0941", "title": "UI alignment issue", "age_days": 30 },
- *    { "ticket_id": "BUG-0920", "title": "Search index bug", "age_days": 29 }
- *  ]
- * }
+ * @swagger
+ * /tickets/oldest-open:
+ *   get:
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         description: Number of top oldest tickets to return
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: category
+ *         description: Filter tickets by category (e.g., "Bug", "Feature Request")
+ *         schema:
+ *           type: string
+ *         summary: Get the number of oldest open tickets
+ *     description: Retrieve the number of oldest open tickets
+ *     tags:
+ *       - Tickets
+ *     responses:
+ *       200:
+ *         description: Oldest tickets data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 date:
+ *                   type: string
+ *                   example: 2025-11-03T23:59:28.303Z
+ *                 category:
+ *                   type: string
+ *                   example: bugs
+ *                 top_oldest_tickets:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       ticket_id:
+ *                         type: string
+ *                         example: BUG_0372
+ *                       title:
+ *                         type: string
+ *                         example: Login fails on Safari
+ *                       age_days:
+ *                         type: number
+ *                         example: 34
  */
 router.get("/oldest-open", async (req, res, next) => {
   try {
@@ -173,8 +252,7 @@ router.get("/oldest-open", async (req, res, next) => {
         : 0;
       return {
         ...item,
-        // For Testing: Simulate different ages
-        properties: { ...item.properties, Age: { number: ageDays - index } },
+        properties: { ...item.properties, Age: { number: ageDays } },
       };
     });
 
