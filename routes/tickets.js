@@ -23,12 +23,6 @@ const dataSourceId = process.env.NOTION_DATA_SOURCE_ID;
  *         description: Filter tickets by status (e.g., "Open", "Closed")
  *         schema:
  *           type: string
- *       - in: query
- *         name: category
- *         description: Filter tickets by category (e.g., "Bug", "Feature Request")
- *         schema:
- *           type: string
- *         summary: Get a summary of the total open tickets
  *     description: Retrieve a summary of the total open tickets
  *     tags:
  *       - Tickets
