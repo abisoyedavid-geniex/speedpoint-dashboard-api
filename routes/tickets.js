@@ -117,29 +117,40 @@ router.get("/open-summary", async (req, res, next) => {
  *                 date:
  *                   type: string
  *                   example: 2025-11-03T23:59:28.303Z
- *                 average_age_days:
- *                   type: object
- *                   properties:
- *                     bugs:
- *                       type: number
- *                       example: 5
- *                     feature_requests:
- *                       type: number
- *                       example: 4
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       type:
+ *                         type: string
+ *                         example: "Bugs"
+ *                       average_age_days:
+ *                         type: number
+ *                         example: 54
  */
 router.get("/average-age", async (req, res, next) => {
   try {
-    const query = req.query || {};
-    const status = query.status || "";
+    const { category, status } = req.query || {};
+    const filter = { and: [] };
+
+    if (category) {
+      filter.and.push({
+        property: "Type",
+        select: { equals: category },
+      });
+    }
+
+    if (status) {
+      filter.and.push({
+        property: "Status",
+        status: { equals: status },
+      });
+    }
 
     const response = await notion.dataSources.query({
       data_source_id: dataSourceId,
-      filter: status
-        ? {
-            property: "Status",
-            status: { equals: status },
-          }
-        : undefined,
+      filter: filter.and.length > 0 ? filter : undefined,
     });
 
     const { bugs, feature_requests } = response.results.reduce(
