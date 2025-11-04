@@ -166,14 +166,15 @@ router.get("/oldest-open", async (req, res, next) => {
       page_size: topX,
     });
 
-    const results = response.results.map((item) => {
+    const results = response.results.map((item, index) => {
       const reportedOn = item.properties["Reported On"].date?.start;
       const ageDays = reportedOn
         ? dayjs(new Date()).diff(reportedOn, "day")
         : 0;
       return {
         ...item,
-        properties: { ...item.properties, Age: { number: ageDays } },
+        // For Testing: Simulate different ages
+        properties: { ...item.properties, Age: { number: ageDays - index } },
       };
     });
 
@@ -183,7 +184,7 @@ router.get("/oldest-open", async (req, res, next) => {
       oldestOpen,
       context
     );
-    res.json({ ...transformedData, results: response.results });
+    res.json(transformedData);
   } catch (error) {
     next(error);
   }
