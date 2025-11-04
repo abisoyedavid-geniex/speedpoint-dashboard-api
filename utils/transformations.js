@@ -3,11 +3,16 @@ const transformations = {
   openSummary: `
     {
       "date": $now(),
-      "total_open_tickets": $count(results),
-      "breakdown": {
-        "bugs": $count(results[properties.Type.select.name="Bug"]),
-        "feature_requests": $count(results[properties.Type.select.name="Feature Request"])
-      }
+      "breakdown": [{
+        "type": "Bugs",
+        "total": $count(results[properties.Type.select.name="Bug"])
+      }, {
+        "type": "Feature Requests",
+        "total": $count(results[properties.Type.select.name="Feature Request"])
+      }, {
+        "type": "All",
+        "total": $count(results)
+      }]
     }
   `,
   averageAge: `
