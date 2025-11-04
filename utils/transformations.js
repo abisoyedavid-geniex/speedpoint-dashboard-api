@@ -13,10 +13,13 @@ const transformations = {
   averageAge: `
     {
       "date": $now(),
-      "average_age_days": {
-        "bugs": bugsAverageAge,
-        "feature_requests": featureRequestsAverageAge
-      }
+      "data": [{
+        "type": "Bugs",
+        "average_age_days": bugsAverageAge
+      }, {
+        "type": "Feature Requests",
+        "average_age_days": featureRequestsAverageAge
+      }]
     }
   `,
   oldestOpen: `
