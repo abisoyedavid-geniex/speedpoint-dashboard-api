@@ -139,7 +139,7 @@ router.get("/average-age", async (req, res, next) => {
       filter: filter.and.length > 0 ? filter : undefined,
     });
 
-    const { bugs, feature_requests } = response.results.reduce(
+    const { bugs, feature_requests, others } = response.results.reduce(
       (acc, item) => {
         const reportedOn = item.properties["Reported On"].date?.start;
         const ageDays = reportedOn
@@ -151,10 +151,12 @@ router.get("/average-age", async (req, res, next) => {
           acc.bugs.push(ageDays);
         } else if (type === "Feature Request") {
           acc.feature_requests.push(ageDays);
+        } else {
+          acc.others.push(ageDays);
         }
         return acc;
       },
-      { bugs: [], feature_requests: [] }
+      { bugs: [], feature_requests: [], others: [] }
     );
 
     const results = {
@@ -163,6 +165,9 @@ router.get("/average-age", async (req, res, next) => {
         : 0,
       featureRequestsAverageAge: feature_requests.length
         ? feature_requests.reduce((a, b) => a + b, 0) / feature_requests.length
+        : 0,
+      othersAverageAge: others.length
+        ? others.reduce((a, b) => a + b, 0) / others.length
         : 0,
     };
 
