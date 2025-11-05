@@ -12,9 +12,6 @@ const transformations = {
       }, {
         "type": "Others",
         "total": $count(results) - $count(results[properties.Type.select.name="Feature Request"]) - $count(results[properties.Type.select.name="Bug"])
-      }, {
-        "type": "All",
-        "total": $count(results)
       }]
     }
   `,
