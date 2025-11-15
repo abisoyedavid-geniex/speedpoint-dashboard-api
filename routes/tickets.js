@@ -1,13 +1,13 @@
-const express = require("express");
-const dayjs = require("dayjs");
+const express = require('express');
+const dayjs = require('dayjs');
 
-const notion = require("../config/notion");
-const { transformData } = require("../utils/helpers");
+const notion = require('../config/notion');
+const { transformData } = require('../utils/helpers');
 const {
   openSummary,
   oldestOpen,
   averageAge,
-} = require("../utils/transformations");
+} = require('../utils/transformations');
 
 const router = express.Router();
 
@@ -49,13 +49,13 @@ const dataSourceId = process.env.NOTION_DATA_SOURCE_ID;
  *                         type: number
  *                         example: 34
  */
-router.get("/open-summary", async (req, res, next) => {
+router.get('/open-summary', async (req, res, next) => {
   const { date_range: dateRange, status } = req.query || {};
   const filter = { and: [] };
 
   if (status) {
     filter.and.push({
-      property: "Status",
+      property: 'Status',
       status: { equals: status },
     });
   }
@@ -84,8 +84,13 @@ router.get("/open-summary", async (req, res, next) => {
  *   get:
  *     parameters:
  *       - in: query
+ *         name: category
+ *         description: Filter tickets by type (e.g., "Bug", "Feature Request")
+ *         schema:
+ *           type: string
+ *       - in: query
  *         name: status
- *         description: Filter tickets by status (e.g., "Open", "Closed")
+ *         description: Filter tickets by status (e.g., "Done", "Under Review")
  *         schema:
  *           type: string
  *         summary: Get average age of tickets
@@ -115,21 +120,32 @@ router.get("/open-summary", async (req, res, next) => {
  *                         type: number
  *                         example: 54
  */
-router.get("/average-age", async (req, res, next) => {
+router.get('/average-age', async (req, res, next) => {
   try {
     const { category, status } = req.query || {};
-    const filter = { and: [] };
+    const filter = {
+      and: [
+        {
+          property: 'Done Date',
+          date: { is_not_empty: true },
+        },
+        {
+          property: 'Reported On',
+          date: { is_not_empty: true },
+        },
+      ],
+    };
 
     if (category) {
       filter.and.push({
-        property: "Type",
+        property: 'Type',
         select: { equals: category },
       });
     }
 
     if (status) {
       filter.and.push({
-        property: "Status",
+        property: 'Status',
         status: { equals: status },
       });
     }
@@ -141,15 +157,15 @@ router.get("/average-age", async (req, res, next) => {
 
     const { bugs, feature_requests, others } = response.results.reduce(
       (acc, item) => {
-        const reportedOn = item.properties["Reported On"].date?.start;
-        const ageDays = reportedOn
-          ? dayjs(new Date()).diff(reportedOn, "day")
-          : 0;
+        const reportedOn = item.properties['Reported On'].date.start;
+        const doneDate = item.properties['Done Date'].date.start;
 
-        const type = item.properties["Type"].select?.name;
-        if (type === "Bug") {
+        const ageDays = dayjs(doneDate).diff(reportedOn, 'day');
+
+        const type = item.properties['Type'].select?.name;
+        if (type === 'Bug') {
           acc.bugs.push(ageDays);
-        } else if (type === "Feature Request") {
+        } else if (type === 'Feature Request') {
           acc.feature_requests.push(ageDays);
         } else {
           acc.others.push(ageDays);
@@ -226,31 +242,31 @@ router.get("/average-age", async (req, res, next) => {
  *                         type: number
  *                         example: 34
  */
-router.get("/oldest-open", async (req, res, next) => {
+router.get('/oldest-open', async (req, res, next) => {
   try {
     const query = req.query || {};
-    const category = query.category || "Bug";
-    const topX = parseInt(query.limit || "5", 10);
+    const category = query.category || 'Bug';
+    const topX = parseInt(query.limit || '5', 10);
 
     const response = await notion.dataSources.query({
       data_source_id: dataSourceId,
       filter: {
-        property: "Type",
+        property: 'Type',
         select: { equals: category },
       },
       sorts: [
         {
-          property: "Reported On",
-          direction: "ascending",
+          property: 'Reported On',
+          direction: 'ascending',
         },
       ],
       page_size: topX,
     });
 
     const results = response.results.map((item, index) => {
-      const reportedOn = item.properties["Reported On"].date?.start;
+      const reportedOn = item.properties['Reported On'].date?.start;
       const ageDays = reportedOn
-        ? dayjs(new Date()).diff(reportedOn, "day")
+        ? dayjs(new Date()).diff(reportedOn, 'day')
         : 0;
       return {
         ...item,
