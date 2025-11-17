@@ -24,9 +24,6 @@ const transformations = {
       }, {
         "type": "Feature Requests",
         "average_age_days": featureRequestsAverageAge
-      }, {
-        "type": "Others",
-        "average_age_days": othersAverageAge
       }]
     }
   `,

@@ -182,9 +182,10 @@ router.get('/average-age', async (req, res, next) => {
       featureRequestsAverageAge: feature_requests.length
         ? feature_requests.reduce((a, b) => a + b, 0) / feature_requests.length
         : 0,
-      othersAverageAge: others.length
-        ? others.reduce((a, b) => a + b, 0) / others.length
-        : 0,
+      // Remove for now
+      // othersAverageAge: others.length
+      //   ? others.reduce((a, b) => a + b, 0) / others.length
+      //   : 0,
     };
 
     const transformedData = await transformData(results, averageAge);
