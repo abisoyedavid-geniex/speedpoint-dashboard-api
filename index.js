@@ -14,6 +14,7 @@ require('./config/notion');
 const routes = require('./routes');
 const { leadsRoutes, healthRoutes, ticketsRoutes } = routes;
 
+const authenticate = require('./middleware/authentication');
 const errorHandler = require('./middleware/errorHandler');
 
 // Set up rate limiter: maximum of twenty requests per minute
@@ -48,8 +49,8 @@ app.use(
   })
 );
 app.use(`${BASE_API_PATH}/health`, healthRoutes);
-app.use(`${BASE_API_PATH}/leads`, leadsRoutes);
-app.use(`${BASE_API_PATH}/tickets`, ticketsRoutes);
+app.use(`${BASE_API_PATH}/leads`, authenticate, leadsRoutes);
+app.use(`${BASE_API_PATH}/tickets`, authenticate, ticketsRoutes);
 
 // Error handling middleware
 app.use(errorHandler);
