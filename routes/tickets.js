@@ -50,19 +50,25 @@ const dataSourceId = process.env.NOTION_DATA_SOURCE_ID;
  *                         example: 34
  */
 router.get('/open-summary', async (req, res, next) => {
-  const { date_range: dateRange, status } = req.query || {};
-  const filter = { and: [] };
+  const { status } = req.query || {};
+  const filter = {
+    and: [
+      {
+        property: 'Status',
+        status: { does_not_equal: 'Done' },
+      },
+      {
+        property: 'Status',
+        status: { does_not_equal: 'Cancelled' },
+      },
+    ],
+  };
 
   if (status) {
     filter.and.push({
       property: 'Status',
       status: { equals: status },
     });
-  }
-
-  // TODO: Add date_range support
-  if (dateRange) {
-    // Implement date range filtering logic here
   }
 
   try {
@@ -122,7 +128,7 @@ router.get('/open-summary', async (req, res, next) => {
  */
 router.get('/average-age', async (req, res, next) => {
   try {
-    const { category, status } = req.query || {};
+    const { category, status = 'Done' } = req.query || {};
     const filter = {
       and: [
         {
@@ -252,8 +258,20 @@ router.get('/oldest-open', async (req, res, next) => {
     const response = await notion.dataSources.query({
       data_source_id: dataSourceId,
       filter: {
-        property: 'Type',
-        select: { equals: category },
+        and: [
+          {
+            property: 'Type',
+            select: { equals: category },
+          },
+          {
+            property: 'Status',
+            status: { does_not_equal: 'Done' },
+          },
+          {
+            property: 'Status',
+            status: { does_not_equal: 'Cancelled' },
+          },
+        ],
       },
       sorts: [
         {
