@@ -13,6 +13,15 @@ const router = express.Router();
 
 const dataSourceId = process.env.NOTION_DATA_SOURCE_ID;
 
+const retrieveNotionData = async (filter, start_cursor = undefined) => {
+  const response = await notion.dataSources.query({
+    data_source_id: dataSourceId,
+    filter,
+    ...(start_cursor && { start_cursor }),
+  });
+  return response;
+};
+
 /**
  * @swagger
  * /tickets/open-summary:
@@ -62,6 +71,7 @@ router.get('/open-summary', async (req, res, next) => {
         status: { does_not_equal: 'Cancelled' },
       },
     ],
+    page_size: 1000,
   };
 
   if (status) {
@@ -72,12 +82,22 @@ router.get('/open-summary', async (req, res, next) => {
   }
 
   try {
-    const response = await notion.dataSources.query({
-      data_source_id: dataSourceId,
-      filter: filter.and.length > 0 ? filter : undefined,
-    });
+    let hasMore = true;
+    let nextCursor = '';
+    const results = [];
 
-    const transformedData = await transformData(response, openSummary);
+    while (hasMore) {
+      const response = await retrieveNotionData(
+        filter.and.length > 0 ? filter : undefined,
+        nextCursor
+      );
+      nextCursor = response.next_cursor;
+      hasMore = response.has_more;
+
+      results.push(...response.results);
+    }
+
+    const transformedData = await transformData({ results }, openSummary);
     res.json(transformedData);
   } catch (error) {
     next(error);
@@ -156,12 +176,22 @@ router.get('/average-age', async (req, res, next) => {
       });
     }
 
-    const response = await notion.dataSources.query({
-      data_source_id: dataSourceId,
-      filter: filter.and.length > 0 ? filter : undefined,
-    });
+    let hasMore = true;
+    let nextCursor = '';
+    const results = [];
 
-    const { bugs, feature_requests, others } = response.results.reduce(
+    while (hasMore) {
+      const response = await retrieveNotionData(
+        filter.and.length > 0 ? filter : undefined,
+        nextCursor
+      );
+      nextCursor = response.next_cursor;
+      hasMore = response.has_more;
+
+      results.push(...response.results);
+    }
+
+    const { bugs, feature_requests, others } = results.reduce(
       (acc, item) => {
         const reportedOn = item.properties['Reported On'].date.start;
         const doneDate = item.properties['Done Date'].date.start;
@@ -181,7 +211,7 @@ router.get('/average-age', async (req, res, next) => {
       { bugs: [], feature_requests: [], others: [] }
     );
 
-    const results = {
+    const parsedResults = {
       bugsAverageAge: bugs.length
         ? bugs.reduce((a, b) => a + b, 0) / bugs.length
         : 0,
@@ -194,7 +224,7 @@ router.get('/average-age', async (req, res, next) => {
       //   : 0,
     };
 
-    const transformedData = await transformData(results, averageAge);
+    const transformedData = await transformData(parsedResults, averageAge);
     res.json(transformedData);
   } catch (error) {
     next(error);
