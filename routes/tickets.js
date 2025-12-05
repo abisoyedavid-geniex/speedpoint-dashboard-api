@@ -64,7 +64,7 @@ router.get('/open-summary', async (req, res, next) => {
     and: [
       {
         property: 'Status',
-        status: { does_not_equal: 'Done' },
+        status: { does_not_equal: 'Done & In Prod' },
       },
       {
         property: 'Status',
@@ -116,7 +116,7 @@ router.get('/open-summary', async (req, res, next) => {
  *           type: string
  *       - in: query
  *         name: status
- *         description: Filter tickets by status (e.g., "Done", "Under Review")
+ *         description: Filter tickets by status (e.g., "Done & In Prod & In Prod", "Under Review")
  *         schema:
  *           type: string
  *         summary: Get average age of tickets
@@ -148,7 +148,7 @@ router.get('/open-summary', async (req, res, next) => {
  */
 router.get('/average-age', async (req, res, next) => {
   try {
-    const { category, status = 'Done' } = req.query || {};
+    const { category, status = 'Done & In Prod' } = req.query || {};
     const filter = {
       and: [
         {
